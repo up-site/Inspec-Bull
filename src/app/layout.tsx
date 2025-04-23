@@ -1,6 +1,5 @@
 import React from 'react';
 import { Inter } from 'next/font/google';
-import { Metadata } from 'next';
 import './globals.css';
 
 const inter = Inter({
@@ -8,8 +7,8 @@ const inter = Inter({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
-  title: 'NDT Website',
+export const metadata = {
+  title: 'Inspec-Bull',
   description: 'Non-Destructive Testing Services',
 };
 
