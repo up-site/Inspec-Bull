@@ -1,113 +1,103 @@
-import { NextRequest, NextResponse } from 'next/server';
-import clientPromise from '../../../lib/mongodb';
+// src/app/api/blog/route.ts
+import { NextRequest } from 'next/server';
+import connectDB from '../../../lib/mongodb';
+import BlogPost from '../../../../models/BlogPost';
+import { createResponse, createErrorResponse, createPaginatedResponse, parsePaginationParams, buildSortObject } from '../../../lib/api';
+import { blogPostSchema } from '../../../lib/validation';
+import { requireAdmin } from '../../../lib/auth';
+import { generateSlug, calculateReadTime } from '../../../lib/utils';
 
-// GET all blog posts
 export async function GET(request: NextRequest) {
   try {
-    const client = await clientPromise;
-    const db = client.db();
+    await connectDB();
     
-    // Get query parameters for filtering/pagination
-    const searchParams = request.nextUrl.searchParams;
-    const query = searchParams.get('query') || '';
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const { searchParams } = new URL(request.url);
+    const { page, limit, sort, order } = parsePaginationParams(searchParams);
+    
+    const filters: any = {};
+    
+    const search = searchParams.get('search');
+    if (search) {
+      filters.$text = { $search: search };
+    }
+    
+    const category = searchParams.get('category');
+    if (category) {
+      filters.category = category;
+    }
+    
+    const status = searchParams.get('status');
+    if (status) {
+      filters.status = status;
+    } else {
+      filters.status = 'published';
+    }
+    
+    const featured = searchParams.get('featured');
+    if (featured === 'true') {
+      filters.isFeatured = true;
+    }
+    
+    const author = searchParams.get('author');
+    if (author) {
+      filters.author = author;
+    }
+    
     const skip = (page - 1) * limit;
+    const sortObj = buildSortObject(sort, order);
     
-    // Check if we should only return admin posts
-    const isAdmin = searchParams.get('admin') === 'true';
+    const [posts, total] = await Promise.all([
+      BlogPost.find(filters)
+        .populate('author', 'name avatar')
+        .sort(sortObj)
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      BlogPost.countDocuments(filters)
+    ]);
     
-    // Build the MongoDB query
-    let mongoQuery: any = {};
-    
-    // If not admin view, only show published posts
-    if (!isAdmin) {
-      mongoQuery.published = true;
-    }
-    
-    if (query) {
-      mongoQuery.$or = [
-        { title: { $regex: query, $options: 'i' } },
-        { content: { $regex: query, $options: 'i' } }
-      ];
-    }
-    
-    // Get total count for pagination
-    const total = await db.collection('blogs').countDocuments(mongoQuery);
-    
-    // Fetch the blog posts
-    const posts = await db
-      .collection('blogs')
-      .find(mongoQuery)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .toArray();
-    
-    return NextResponse.json({
-      success: true,
-      data: posts,
-      pagination: {
-        total,
-        page,
-        limit,
-        pages: Math.ceil(total / limit)
-      }
-    });
-  } catch (error) {
-    console.error('Database error:', error);
-    return NextResponse.json({
-      success: false,
-      message: 'Failed to fetch blog posts',
-      error: (error as Error).message
-    }, { status: 500 });
+    return createPaginatedResponse(posts, { page, limit, total });
+  } catch (error: any) {
+    console.error('Get blog posts error:', error);
+    return createErrorResponse('Failed to fetch blog posts', 500);
   }
 }
 
-// POST a new blog post (admin only)
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const user = await requireAdmin(request);
+    await connectDB();
     
-    // Validate the request body
-    if (!body.title || !body.content) {
-      return NextResponse.json({
-        success: false,
-        message: 'Title and content are required'
-      }, { status: 400 });
+    const body = await request.json();
+    const validatedData = blogPostSchema.parse(body);
+    
+    const slug = generateSlug(validatedData.title);
+    
+    const existingPost = await BlogPost.findOne({ slug });
+    if (existingPost) {
+      return createErrorResponse('A post with this title already exists', 409);
     }
     
-    const client = await clientPromise;
-    const db = client.db();
+    const readTime = calculateReadTime(validatedData.content);
     
-    // Create a new blog post document
-    const newPost = {
-      title: body.title,
-      content: body.content,
-      author: body.author || 'Anonymous',
-      tags: body.tags || [],
-      published: body.published || false, // Default to unpublished
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
+    const blogPost = await BlogPost.create({
+      ...validatedData,
+      slug,
+      author: user._id,
+      readTime,
+      publishedAt: validatedData.status === 'published' ? new Date() : null,
+    });
     
-    // Insert the document into MongoDB
-    const result = await db.collection('blogs').insertOne(newPost);
+    await blogPost.populate('author', 'name avatar');
     
-    return NextResponse.json({
-      success: true,
-      message: 'Blog post created successfully',
-      data: {
-        ...newPost,
-        _id: result.insertedId
-      }
-    }, { status: 201 });
-  } catch (error) {
-    console.error('Database error:', error);
-    return NextResponse.json({
-      success: false,
-      message: 'Failed to create blog post',
-      error: (error as Error).message
-    }, { status: 500 });
+    return createResponse(blogPost, 'Blog post created successfully', 201);
+  } catch (error: any) {
+    console.error('Create blog post error:', error);
+    
+    if (error.name === 'ZodError') {
+      return createErrorResponse('Validation failed', 400, 'VALIDATION_ERROR', error.errors);
+    }
+    
+    return createErrorResponse('Failed to create blog post', 500);
   }
 }

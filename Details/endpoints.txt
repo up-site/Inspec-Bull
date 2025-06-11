@@ -1,0 +1,292 @@
+# API Endpoints for Inspec-Bull Project
+
+## Authentication & User Management
+```
+POST   /api/auth/register           - User registration
+POST   /api/auth/login              - User login
+POST   /api/auth/logout             - User logout
+POST   /api/auth/refresh            - Refresh access token
+POST   /api/auth/forgot-password    - Request password reset
+POST   /api/auth/reset-password     - Reset password with token
+GET    /api/auth/verify-email       - Verify email address
+POST   /api/auth/resend-verification - Resend verification email
+
+GET    /api/users/profile           - Get current user profile
+PUT    /api/users/profile           - Update user profile
+DELETE /api/users/profile           - Delete user account
+POST   /api/users/change-password   - Change password
+GET    /api/users                   - Get all users (admin)
+GET    /api/users/:id               - Get user by ID (admin)
+PUT    /api/users/:id               - Update user (admin)
+DELETE /api/users/:id               - Delete user (admin)
+```
+
+## Blog Management
+```
+GET    /api/blog                    - Get all blog posts (with pagination, filters)
+GET    /api/blog/:slug              - Get single blog post by slug
+POST   /api/blog                    - Create new blog post (admin)
+PUT    /api/blog/:id                - Update blog post (admin)
+DELETE /api/blog/:id                - Delete blog post (admin)
+PATCH  /api/blog/:id/publish        - Publish/unpublish blog post (admin)
+PATCH  /api/blog/:id/feature        - Feature/unfeature blog post (admin)
+
+GET    /api/blog/:id/comments       - Get comments for blog post
+POST   /api/blog/:id/comments       - Add comment to blog post
+PUT    /api/blog/:id/comments/:commentId - Update comment
+DELETE /api/blog/:id/comments/:commentId - Delete comment
+PATCH  /api/blog/:id/comments/:commentId/approve - Approve comment (admin)
+
+POST   /api/blog/:id/like           - Like/unlike blog post
+GET    /api/blog/categories         - Get blog categories
+GET    /api/blog/tags               - Get all tags
+GET    /api/blog/search             - Search blog posts
+```
+
+## Course Management
+```
+GET    /api/courses                 - Get all courses (with pagination, filters)
+GET    /api/courses/:slug           - Get single course by slug
+POST   /api/courses                 - Create new course (admin)
+PUT    /api/courses/:id             - Update course (admin)
+DELETE /api/courses/:id             - Delete course (admin)
+PATCH  /api/courses/:id/publish     - Publish/unpublish course (admin)
+
+POST   /api/courses/:id/enroll      - Enroll in course
+DELETE /api/courses/:id/enroll      - Unenroll from course
+GET    /api/courses/:id/progress    - Get course progress
+PATCH  /api/courses/:id/progress    - Update course progress
+
+GET    /api/courses/:id/modules     - Get course modules
+GET    /api/courses/:id/modules/:moduleId/lessons - Get lessons in module
+PATCH  /api/courses/:id/modules/:moduleId/lessons/:lessonId/complete - Mark lesson complete
+
+POST   /api/courses/:id/review      - Add course review
+PUT    /api/courses/:id/review      - Update course review
+DELETE /api/courses/:id/review      - Delete course review
+
+GET    /api/courses/enrolled        - Get user's enrolled courses
+GET    /api/courses/certificates    - Get user's certificates
+POST   /api/courses/:id/certificate - Generate certificate
+```
+
+## Equipment Management
+```
+GET    /api/equipment               - Get all equipment (with pagination, filters)
+GET    /api/equipment/:slug         - Get single equipment by slug
+POST   /api/equipment               - Create new equipment (admin)
+PUT    /api/equipment/:id           - Update equipment (admin)
+DELETE /api/equipment/:id           - Delete equipment (admin)
+PATCH  /api/equipment/:id/feature   - Feature/unfeature equipment (admin)
+
+POST   /api/equipment/:id/review    - Add equipment review
+PUT    /api/equipment/:id/review    - Update equipment review
+DELETE /api/equipment/:id/review    - Delete equipment review
+
+GET    /api/equipment/categories    - Get equipment categories
+GET    /api/equipment/manufacturers - Get manufacturers
+GET    /api/equipment/search        - Search equipment
+POST   /api/equipment/:id/inquiry   - Send equipment inquiry
+```
+
+## Job Management
+```
+GET    /api/jobs                    - Get all jobs (with pagination, filters)
+GET    /api/jobs/:slug              - Get single job by slug
+POST   /api/jobs                    - Create new job (admin/employer)
+PUT    /api/jobs/:id                - Update job (admin/employer)
+DELETE /api/jobs/:id                - Delete job (admin/employer)
+PATCH  /api/jobs/:id/status         - Update job status (admin)
+
+POST   /api/jobs/:id/apply          - Apply for job
+GET    /api/jobs/:id/applications   - Get job applications (admin/employer)
+PATCH  /api/jobs/:id/applications/:appId/status - Update application status
+
+GET    /api/jobs/categories         - Get job categories
+GET    /api/jobs/locations          - Get job locations
+GET    /api/jobs/search             - Search jobs
+GET    /api/jobs/applied            - Get user's applied jobs
+GET    /api/jobs/saved              - Get user's saved jobs
+POST   /api/jobs/:id/save           - Save/unsave job
+```
+
+## Service Management
+```
+GET    /api/services                - Get all services (with pagination, filters)
+GET    /api/services/:slug          - Get single service by slug
+POST   /api/services                - Create new service (admin)
+PUT    /api/services/:id            - Update service (admin)
+DELETE /api/services/:id            - Delete service (admin)
+PATCH  /api/services/:id/feature    - Feature/unfeature service (admin)
+
+POST   /api/services/:id/inquiry    - Send service inquiry
+POST   /api/services/:id/quote      - Request service quote
+GET    /api/services/:id/testimonials - Get service testimonials
+POST   /api/services/:id/testimonial - Add service testimonial
+
+GET    /api/services/categories     - Get service categories
+GET    /api/services/search         - Search services
+```
+
+## Contact & Communication
+```
+POST   /api/contact                 - Submit contact form
+GET    /api/contact                 - Get all contact submissions (admin)
+GET    /api/contact/:id             - Get single contact submission (admin)
+PATCH  /api/contact/:id/status      - Update contact status (admin)
+POST   /api/contact/:id/response    - Send response to contact (admin)
+DELETE /api/contact/:id             - Delete contact submission (admin)
+
+POST   /api/newsletter/subscribe    - Subscribe to newsletter
+POST   /api/newsletter/unsubscribe  - Unsubscribe from newsletter
+GET    /api/newsletter/verify       - Verify newsletter subscription
+GET    /api/newsletter              - Get newsletter subscribers (admin)
+POST   /api/newsletter/send         - Send newsletter (admin)
+```
+
+## File Management
+```
+POST   /api/upload/image            - Upload single image
+POST   /api/upload/images           - Upload multiple images
+POST   /api/upload/document         - Upload document (PDF, DOC, etc.)
+POST   /api/upload/video            - Upload video file
+DELETE /api/upload/:fileId          - Delete uploaded file
+GET    /api/upload/signed-url       - Get signed URL for direct upload
+```
+
+## Analytics & Reports
+```
+GET    /api/analytics/dashboard     - Get dashboard analytics (admin)
+GET    /api/analytics/blog          - Get blog analytics (admin)
+GET    /api/analytics/courses       - Get course analytics (admin)
+GET    /api/analytics/equipment     - Get equipment analytics (admin)
+GET    /api/analytics/jobs          - Get job analytics (admin)
+GET    /api/analytics/users         - Get user analytics (admin)
+GET    /api/analytics/traffic       - Get traffic analytics (admin)
+
+GET    /api/reports/sales           - Get sales report (admin)
+GET    /api/reports/enrollments     - Get enrollment report (admin)
+GET    /api/reports/user-activity   - Get user activity report (admin)
+```
+
+## Search & Filters
+```
+GET    /api/search                  - Global search across all content
+GET    /api/search/suggestions      - Get search suggestions/autocomplete
+GET    /api/search/recent           - Get recent searches
+DELETE /api/search/recent           - Clear recent searches
+```
+
+## Admin Dashboard
+```
+GET    /api/admin/stats             - Get overall statistics
+GET    /api/admin/recent-activity   - Get recent activities
+GET    /api/admin/pending-approvals - Get pending approvals
+GET    /api/admin/system-health     - Get system health status
+POST   /api/admin/backup            - Create system backup
+GET    /api/admin/logs              - Get system logs
+```
+
+## Settings & Configuration
+```
+GET    /api/settings                - Get application settings
+PUT    /api/settings                - Update application settings (admin)
+GET    /api/settings/theme          - Get theme settings
+PUT    /api/settings/theme          - Update theme settings
+GET    /api/settings/email          - Get email settings (admin)
+PUT    /api/settings/email          - Update email settings (admin)
+GET    /api/settings/seo            - Get SEO settings (admin)
+PUT    /api/settings/seo            - Update SEO settings (admin)
+```
+
+## Notifications
+```
+GET    /api/notifications           - Get user notifications
+PATCH  /api/notifications/:id/read  - Mark notification as read
+PATCH  /api/notifications/read-all  - Mark all notifications as read
+DELETE /api/notifications/:id       - Delete notification
+GET    /api/notifications/settings  - Get notification preferences
+PUT    /api/notifications/settings  - Update notification preferences
+```
+
+## Webhooks & Integrations
+```
+POST   /api/webhooks/payment        - Payment webhook (Stripe/PayPal)
+POST   /api/webhooks/email          - Email webhook (SendGrid/Mailgun)
+GET    /api/integrations            - Get available integrations (admin)
+POST   /api/integrations/:service   - Connect integration (admin)
+DELETE /api/integrations/:service   - Disconnect integration (admin)
+```
+
+## Public API (No Authentication Required)
+```
+GET    /api/public/blog             - Get published blog posts
+GET    /api/public/blog/:slug       - Get published blog post
+GET    /api/public/courses          - Get published courses
+GET    /api/public/equipment        - Get equipment catalog
+GET    /api/public/services         - Get services
+GET    /api/public/jobs             - Get active jobs
+GET    /api/public/stats            - Get public statistics
+```
+
+## Health & Monitoring
+```
+GET    /api/health                  - Health check endpoint
+GET    /api/status                  - System status
+GET    /api/version                 - API version info
+```
+
+---
+
+## HTTP Status Codes Used
+
+- **200** - Success
+- **201** - Created
+- **204** - No Content (successful deletion)
+- **400** - Bad Request (validation errors)
+- **401** - Unauthorized
+- **403** - Forbidden
+- **404** - Not Found
+- **409** - Conflict (duplicate entries)
+- **422** - Unprocessable Entity (business logic errors)
+- **429** - Too Many Requests (rate limiting)
+- **500** - Internal Server Error
+
+## Request/Response Patterns
+
+### Pagination Query Parameters
+```
+?page=1&limit=10&sort=createdAt&order=desc
+```
+
+### Filter Query Parameters
+```
+?category=safety&status=published&search=inspection
+```
+
+### Standard Response Format
+```json
+{
+  "success": true,
+  "data": {},
+  "message": "Success message",
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 100,
+    "pages": 10
+  }
+}
+```
+
+### Error Response Format
+```json
+{
+  "success": false,
+  "error": {
+    "message": "Error message",
+    "code": "ERROR_CODE",
+    "details": {}
+  }
+}
+```
