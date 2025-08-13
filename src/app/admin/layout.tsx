@@ -1,26 +1,35 @@
 import React from 'react';
-import { Inter } from 'next/font/google';
 import { Metadata } from 'next';
-import '../globals.css';
-
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-});
+import AdminSidebar from '@/components/admin/AdminSidebar';
+import AdminHeader from '@/components/admin/AdminHeader';
 
 export const metadata: Metadata = {
-  title: 'NDT Website',
-  description: 'Non-Destructive Testing Services',
+  title: 'Admin Panel - Inspec Bull International',
+  description: 'Admin dashboard for managing Inspec Bull International website',
 };
 
-export default function RootLayout({
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.className}>
-      <body>{children}</body>
-    </html>
+    <div className="min-h-screen bg-gray-100">
+      <div className="flex">
+        {/* Sidebar */}
+        <AdminSidebar />
+        
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <AdminHeader />
+          
+          {/* Page Content */}
+          <main className="flex-1 p-6">
+            {children}
+          </main>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -2,6 +2,7 @@ import React from 'react';
 import { Inter } from 'next/font/google';
 import { Metadata } from 'next';
 import '../globals.css';
+import Header from '@/components/layout/header';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -9,8 +10,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'NDT Website',
-  description: 'Non-Destructive Testing Services',
+  title: 'Inspec Bull International - NDT Services',
+  description: 'Leading provider of Non-Destructive Testing services with precision and perfection',
 };
 
 export default function RootLayout({
@@ -20,7 +21,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={inter.className}>
-      <body>{children}</body>
+      <body className="min-h-screen bg-white">
+        <Header />
+        {children}
+      </body>
     </html>
   );
 }

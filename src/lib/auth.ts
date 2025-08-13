@@ -100,3 +100,8 @@ export function generateAuthToken(user: IUser | CleanUser | any): string {
     { expiresIn: env.JWT_EXPIRE }
   );
 }
+
+/**
+ * Legacy auth function - alias for authenticateToken
+ */
+export const auth = authenticateToken;

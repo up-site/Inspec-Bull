@@ -1,64 +1,109 @@
-import { NextRequest } from 'next/server';
-import connectDB from '../../../../lib/mongodb';
+import { NextRequest, NextResponse } from 'next/server';
+import { connectToDatabase } from '@/lib/mongodb';
 import User from '../../../../../models/User';
-import { createResponse, createErrorResponse } from '../../../../lib/api';
-import { registerSchema } from '../../../../lib/validation';
-import { generateRandomString } from '../../../../lib/utils';
-// import { sendEmail, getWelcomeEmailTemplate } from '../../../../lib/email';
-import env from '../../../../config/env';
+import { generateAuthToken } from '@/lib/auth';
+import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB();
+    await connectToDatabase();
     
     const body = await request.json();
-    const validatedData = registerSchema.parse(body);
-    
-    // Check if user already exists
-    const existingUser = await User.findOne({ email: validatedData.email });
-    if (existingUser) {
-      return createErrorResponse('User already exists', 409);
+    const { email, password } = body;
+
+    // Validate required fields
+    if (!email || !password) {
+      return NextResponse.json(
+        { success: false, error: 'Email and password are required' },
+        { status: 400 }
+      );
     }
+
+    // Find user by email and include password for comparison
+    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    console.log("user" , user)
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid email or password' },
+        { status: 401 }
+      );
+    }
+
+    // Check if user is active
+    if (!user.isActive) {
+      return NextResponse.json(
+        { success: false, error: 'Account is deactivated. Please contact administrator.' },
+        { status: 401 }
+      );
+    }
+
+    // Verify password
+    const isPasswordValid = await user.comparePassword(password);
     
-    // Create verification token
-    const verificationToken = generateRandomString();
-    
-    // Create user - Fix: Use User.create() instead of new User()
-    const user = await User.create({
-      name: validatedData.name,
-      email: validatedData.email,
-      password: validatedData.password,
-      verificationToken,
+    if (!isPasswordValid) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid email or password' },
+        { status: 401 }
+      );
+    }
+
+    // Update last login
+    user.lastLogin = new Date();
+    await user.save();
+
+    // Generate JWT token
+    const token = generateAuthToken(user);
+
+    // Create response with user data (excluding password)
+    const userData = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+      isActive: user.isActive,
+      lastLogin: user.lastLogin,
+      isEmailVerified: user.isEmailVerified
+    };
+
+    // Create response with secure cookie
+    const response = NextResponse.json({
+      success: true,
+      message: 'Login successful',
+      user: userData,
+      token
     });
-    
-    // Send welcome email
-    const verificationLink = `${env.NEXT_PUBLIC_APP_URL}/api/auth/verify-email?token=${verificationToken}`;
-    // await sendEmail({
-    //   to: user.email,
-    //   subject: 'Welcome to Inspec-Bull - Verify Your Email',
-    //   html: getWelcomeEmailTemplate(user.name, verificationLink),
-    // });
-    
-    return createResponse(
-      { 
-        message: 'Registration successful. Please check your email to verify your account.',
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role
-        }
-      },
-      'User registered successfully',
-      201
-    );
+
+    // Set HTTP-only cookie for security
+    response.cookies.set('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 // 24 hours
+    });
+
+    return response;
   } catch (error: any) {
-    console.error('Registration error:', error);
+    console.error('Login error:', error);
     
-    if (error.name === 'ZodError') {
-      return createErrorResponse('Validation failed', 400, 'VALIDATION_ERROR', error.errors);
+    // Provide more specific error messages for debugging
+    let errorMessage = 'Internal server error';
+    
+    if (error.message.includes('ECONNREFUSED')) {
+      errorMessage = 'Database connection failed. Please check MongoDB connection.';
+    } else if (error.message.includes('ValidationError')) {
+      errorMessage = 'Validation error: ' + error.message;
+    } else if (error.name === 'MongoServerError') {
+      errorMessage = 'Database error: ' + error.message;
     }
     
-    return createErrorResponse('Registration failed', 500);
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: errorMessage,
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      },
+      { status: 500 }
+    );
   }
 }

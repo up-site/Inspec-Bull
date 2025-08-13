@@ -34,7 +34,10 @@ async function connectDB(): Promise<typeof mongoose> {
     };
 
     cached!.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      console.log('✅ Connected to MongoDB');
+      console.log('✅ Connected to MongoDB' , MONGODB_URI);
+      console.log('🔗 Connection URI:', MONGODB_URI.replace(/\/\/[^:]*:[^@]*@/, '//***:***@'));
+      console.log('🏠 Connected Host:', mongoose.connection.host);
+      console.log('📦 Database Name:', mongoose.connection.name);
       return mongoose;
     });
   }
@@ -50,3 +53,4 @@ async function connectDB(): Promise<typeof mongoose> {
 }
 
 export default connectDB;
+export { connectDB as connectToDatabase };

@@ -8,6 +8,9 @@
 
 # next.js
 /.next/
+
+# uploads
+/public/uploads/
 /out/
 
 # production

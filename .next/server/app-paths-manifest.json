@@ -1,4 +1,12 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/(client)/page": "app/(client)/page.js"
+  "/api/upload/smart/route": "app/api/upload/smart/route.js",
+  "/api/banners/route": "app/api/banners/route.js",
+  "/api/navigation/route": "app/api/navigation/route.js",
+  "/api/company-info/route": "app/api/company-info/route.js",
+  "/api/banners/[id]/route": "app/api/banners/[id]/route.js",
+  "/(client)/page": "app/(client)/page.js",
+  "/admin/testimonials/page": "app/admin/testimonials/page.js",
+  "/admin/image-config/page": "app/admin/image-config/page.js",
+  "/admin/login/page": "app/admin/login/page.js",
+  "/admin/banners/page": "app/admin/banners/page.js"
 }

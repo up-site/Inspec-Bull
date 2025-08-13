@@ -24,8 +24,8 @@ import { z } from 'zod';
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   MONGODB_URI: z.string().min(1, 'MongoDB URI is required'),
-  NEXTAUTH_SECRET: z.string().min(1, 'NextAuth secret is required'),
-  NEXTAUTH_URL: z.string().url('NextAuth URL must be a valid URL'),
+  NEXTAUTH_SECRET: z.string().default('dev-secret-change-in-production'),
+  NEXTAUTH_URL: z.string().default('http://localhost:3003'),
   JWT_SECRET: z.string().min(1, 'JWT secret is required'),
   JWT_EXPIRE: z.string().default('7d'),
   EMAIL_HOST: z.string().optional(),
@@ -38,8 +38,8 @@ const envSchema = z.object({
   STRIPE_PUBLIC_KEY: z.string().optional(),
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
-  NEXT_PUBLIC_APP_URL: z.string().url('App URL must be a valid URL'),
-  NEXT_PUBLIC_API_URL: z.string().url('API URL must be a valid URL'),
+  NEXT_PUBLIC_APP_URL: z.string().default('http://localhost:3003'),
+  NEXT_PUBLIC_API_URL: z.string().default('http://localhost:3003/api'),
 });
 
 const env = envSchema.parse({
