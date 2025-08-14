@@ -24,18 +24,17 @@ interface CompanyInfo {
 }
 
 const Hero: React.FC = () => {
-  const [banners, setBanners] = useState<Banner[]>([]);
+  const [banner, setBanner] = useState<Banner | null>(null);
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
-  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch banners
+    // Fetch first active banner only
     fetch('/api/banners?active=true')
       .then(res => res.json())
       .then(data => {
-        if (data.success) {
-          setBanners(data.data);
+        if (data.success && data.data.length > 0) {
+          setBanner(data.data[0]); // Get only the first banner
         }
       })
       .catch(error => console.error('Error fetching banners:', error))
@@ -52,15 +51,6 @@ const Hero: React.FC = () => {
       .catch(error => console.error('Error fetching company info:', error));
   }, []);
 
-  // Auto-rotate banners if multiple banners exist
-  useEffect(() => {
-    if (banners.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentBannerIndex((prev) => (prev + 1) % banners.length);
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [banners.length]);
 
   if (loading) {
     return (
@@ -70,7 +60,7 @@ const Hero: React.FC = () => {
     );
   }
 
-  if (banners.length === 0) {
+  if (!banner) {
     // Default banner if no banners in database
     return (
       <div className="relative h-96 md:h-[500px] lg:h-[600px] bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700">
@@ -101,15 +91,14 @@ const Hero: React.FC = () => {
     );
   }
 
-  const currentBanner = banners[currentBannerIndex];
 
   return (
     <div className="relative h-96 md:h-[500px] lg:h-[600px] overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
-          src={currentBanner.backgroundImage}
-          alt={currentBanner.title}
+          src={banner.backgroundImage}
+          alt={banner.title}
           fill
           className="object-cover"
           priority
@@ -121,19 +110,19 @@ const Hero: React.FC = () => {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
         <div className="max-w-3xl">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
-            {currentBanner.title}
+            {banner.title}
           </h1>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-8">
-            {currentBanner.subtitle}
+            {banner.subtitle}
           </h2>
           <p className="text-lg md:text-xl text-gray-200 mb-8 max-w-2xl">
-            {currentBanner.description}
+            {banner.description}
           </p>
           <Link
-            href={currentBanner.ctaLink}
+            href={banner.ctaLink}
             className="inline-block bg-blue-600 text-white px-8 py-3 rounded-md text-lg font-semibold hover:bg-blue-700 transition-colors"
           >
-            {currentBanner.ctaText}
+            {banner.ctaText}
           </Link>
         </div>
 
@@ -157,42 +146,6 @@ const Hero: React.FC = () => {
         )}
       </div>
 
-      {/* Banner Indicators */}
-      {banners.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          {banners.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentBannerIndex(index)}
-              className={`w-3 h-3 rounded-full transition-colors ${
-                index === currentBannerIndex ? 'bg-white' : 'bg-white bg-opacity-50'
-              }`}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Navigation Arrows */}
-      {banners.length > 1 && (
-        <>
-          <button
-            onClick={() => setCurrentBannerIndex((prev) => (prev === 0 ? banners.length - 1 : prev - 1))}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-2 rounded-full transition-all"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <button
-            onClick={() => setCurrentBannerIndex((prev) => (prev + 1) % banners.length)}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-2 rounded-full transition-all"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </>
-      )}
     </div>
   );
 };

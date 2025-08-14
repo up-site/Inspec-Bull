@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '@/lib/mongodb';
+import connectDB from '@/lib/mongodb';
 import Client from '@/../../models/Client';
 
 export async function GET() {
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     await connectDB();
     const body = await request.json();
     
-    const { name, logo, website, description, order = 0 } = body;
+    const { name, logo, website, description, order = 0, isActive = true } = body;
     
     if (!name || !logo) {
       return NextResponse.json(
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       website,
       description,
       order,
-      isActive: true
+      isActive
     });
     
     await client.save();

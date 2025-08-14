@@ -57,10 +57,12 @@ const FAQPage: React.FC = () => {
       const url = editingFaq ? `/api/faq/${editingFaq._id}` : '/api/faq';
       const method = editingFaq ? 'PUT' : 'POST';
       
+      const token = localStorage.getItem('token');
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(formData),
       });
@@ -93,8 +95,12 @@ const FAQPage: React.FC = () => {
     if (!confirm('Are you sure you want to delete this FAQ?')) return;
 
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`/api/faq/${faqId}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
 
       const data = await response.json();

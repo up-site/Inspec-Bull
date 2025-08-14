@@ -1,18 +1,18 @@
 // src/app/api/blog/route.ts
-import { NextRequest } from 'next/server';
-import connectDB from '../../../lib/mongodb';
-import BlogPost from '../../../../models/BlogPost';
-import { createResponse, createErrorResponse, createPaginatedResponse, parsePaginationParams, buildSortObject } from '../../../lib/api';
-import { blogPostSchema } from '../../../lib/validation';
-import { requireAdmin } from '../../../lib/auth';
-import { generateSlug, calculateReadTime } from '../../../lib/utils';
+import { NextRequest, NextResponse } from 'next/server';
+import connectDB from '@/lib/mongodb';
+import BlogPost from '@/../../models/BlogPost';
+import { requireAdmin, authenticateToken } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
     
     const { searchParams } = new URL(request.url);
-    const { page, limit, sort, order } = parsePaginationParams(searchParams);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const sort = searchParams.get('sort') || 'publishedAt';
+    const order = searchParams.get('order') || 'desc';
     
     const filters: any = {};
     
@@ -27,11 +27,18 @@ export async function GET(request: NextRequest) {
     }
     
     const status = searchParams.get('status');
+    
+    // If no status is specified and it's a small limit (likely home page), default to published
+    // If it's a large limit (likely admin page), show all statuses
     if (status) {
       filters.status = status;
-    } else {
+    } else if (limit <= 10) {
+      // Public API call (home page) - only show published
       filters.status = 'published';
     }
+    // For admin calls with large limits, don't filter by status (show all)
+    
+    console.log('Blog API filters:', filters, 'limit:', limit);
     
     const featured = searchParams.get('featured');
     if (featured === 'true') {
@@ -44,7 +51,8 @@ export async function GET(request: NextRequest) {
     }
     
     const skip = (page - 1) * limit;
-    const sortObj = buildSortObject(sort, order);
+    const sortObj: any = {};
+    sortObj[sort] = order === 'desc' ? -1 : 1;
     
     const [posts, total] = await Promise.all([
       BlogPost.find(filters)
@@ -56,48 +64,100 @@ export async function GET(request: NextRequest) {
       BlogPost.countDocuments(filters)
     ]);
     
-    return createPaginatedResponse(posts, { page, limit, total });
+    return NextResponse.json({
+      success: true,
+      data: posts,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
   } catch (error: any) {
     console.error('Get blog posts error:', error);
-    return createErrorResponse('Failed to fetch blog posts', 500);
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch blog posts' },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await requireAdmin(request);
+    // Get token from Authorization header
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const user = await authenticateToken(request);
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid or expired token' },
+        { status: 401 }
+      );
+    }
+
     await connectDB();
     
     const body = await request.json();
-    const validatedData = blogPostSchema.parse(body);
+    console.log('Received blog data:', body);
     
-    const slug = generateSlug(validatedData.title);
+    // Generate slug from title
+    const slug = body.title.toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
     
     const existingPost = await BlogPost.findOne({ slug });
     if (existingPost) {
-      return createErrorResponse('A post with this title already exists', 409);
+      return NextResponse.json(
+        { success: false, error: 'A post with this title already exists' },
+        { status: 409 }
+      );
     }
     
-    const readTime = calculateReadTime(validatedData.content);
+    // Calculate read time (rough estimate: 200 words per minute)
+    const readTime = Math.ceil(body.content.split(' ').length / 200);
     
     const blogPost = await BlogPost.create({
-      ...validatedData,
+      ...body,
       slug,
       author: user._id,
       readTime,
-      publishedAt: validatedData.status === 'published' ? new Date() : null,
+      publishedAt: body.status === 'published' ? new Date() : null,
     });
     
     await blogPost.populate('author', 'name avatar');
     
-    return createResponse(blogPost, 'Blog post created successfully', 201);
+    return NextResponse.json({
+      success: true,
+      data: blogPost,
+      message: 'Blog post created successfully'
+    }, { status: 201 });
   } catch (error: any) {
     console.error('Create blog post error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      errors: error.errors,
+      stack: error.stack
+    });
     
-    if (error.name === 'ZodError') {
-      return createErrorResponse('Validation failed', 400, 'VALIDATION_ERROR', error.errors);
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors).map((err: any) => err.message);
+      return NextResponse.json(
+        { success: false, error: `Validation error: ${validationErrors.join(', ')}` },
+        { status: 400 }
+      );
     }
     
-    return createErrorResponse('Failed to create blog post', 500);
+    return NextResponse.json(
+      { success: false, error: `Failed to create blog post: ${error.message}` },
+      { status: 500 }
+    );
   }
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '@/lib/mongodb';
+import connectDB from '@/lib/mongodb';
 import Statistics from '@/../../models/Statistics';
 
 export async function GET() {
@@ -36,7 +36,8 @@ export async function POST(request: NextRequest) {
     
     const { projectsCount, graduationsCount, certificationsCount, countriesCount } = body;
     
-    if (!projectsCount || !graduationsCount || !certificationsCount || !countriesCount) {
+    if (projectsCount === undefined || graduationsCount === undefined || 
+        certificationsCount === undefined || countriesCount === undefined) {
       return NextResponse.json(
         { success: false, message: 'All count fields are required' },
         { status: 400 }

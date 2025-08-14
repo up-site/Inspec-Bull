@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import FAQ from '@/../../models/FAQ';
+import Service from '@/../../models/Service';
 import { authenticateToken } from '@/lib/auth';
 
 export async function GET(
@@ -9,20 +9,24 @@ export async function GET(
 ) {
   try {
     await connectDB();
-    const faq = await FAQ.findById(params.id);
     
-    if (!faq) {
+    const service = await Service.findById(params.id);
+    
+    if (!service) {
       return NextResponse.json(
-        { success: false, message: 'FAQ not found' },
+        { success: false, error: 'Service not found' },
         { status: 404 }
       );
     }
     
-    return NextResponse.json({ success: true, data: faq });
+    return NextResponse.json({
+      success: true,
+      data: service
+    });
   } catch (error) {
-    console.error('FAQ GET error:', error);
+    console.error('Error fetching service:', error);
     return NextResponse.json(
-      { success: false, message: 'Failed to fetch FAQ' },
+      { success: false, error: 'Failed to fetch service' },
       { status: 500 }
     );
   }
@@ -50,39 +54,45 @@ export async function PUT(
     }
 
     await connectDB();
-    const body = await request.json();
     
-    const faq = await FAQ.findByIdAndUpdate(
+    const data = await request.json();
+    
+    // Generate slug from title if not provided
+    if (!data.slug && data.title) {
+      data.slug = data.title.toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+    }
+    
+    const service = await Service.findByIdAndUpdate(
       params.id,
-      body,
+      data,
       { new: true, runValidators: true }
     );
     
-    if (!faq) {
+    if (!service) {
       return NextResponse.json(
-        { success: false, error: 'FAQ not found' },
+        { success: false, error: 'Service not found' },
         { status: 404 }
       );
     }
     
-    return NextResponse.json({ 
-      success: true, 
-      data: faq,
-      message: 'FAQ updated successfully' 
+    return NextResponse.json({
+      success: true,
+      data: service
     });
   } catch (error: any) {
-    console.error('FAQ PUT error:', error);
+    console.error('Error updating service:', error);
     
-    if (error.name === 'ValidationError') {
-      const validationErrors = Object.values(error.errors).map((err: any) => err.message);
+    if (error.code === 11000) {
       return NextResponse.json(
-        { success: false, error: `Validation error: ${validationErrors.join(', ')}` },
+        { success: false, error: 'Service with this slug already exists' },
         { status: 400 }
       );
     }
     
     return NextResponse.json(
-      { success: false, error: 'Failed to update FAQ' },
+      { success: false, error: 'Failed to update service' },
       { status: 500 }
     );
   }
@@ -110,23 +120,24 @@ export async function DELETE(
     }
 
     await connectDB();
-    const faq = await FAQ.findByIdAndDelete(params.id);
     
-    if (!faq) {
+    const service = await Service.findByIdAndDelete(params.id);
+    
+    if (!service) {
       return NextResponse.json(
-        { success: false, error: 'FAQ not found' },
+        { success: false, error: 'Service not found' },
         { status: 404 }
       );
     }
     
-    return NextResponse.json({ 
-      success: true, 
-      message: 'FAQ deleted successfully' 
+    return NextResponse.json({
+      success: true,
+      message: 'Service deleted successfully'
     });
   } catch (error) {
-    console.error('FAQ DELETE error:', error);
+    console.error('Error deleting service:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to delete FAQ' },
+      { success: false, error: 'Failed to delete service' },
       { status: 500 }
     );
   }

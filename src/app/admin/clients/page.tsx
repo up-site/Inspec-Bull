@@ -242,53 +242,115 @@ const ClientsPage: React.FC = () => {
         </table>
       </div>
 
-      {/* Modal */}
+      {/* Enhanced Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">
-              {editingClient ? 'Edit Client' : 'Add Client'}
-            </h2>
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 rounded-t-xl">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-white">
+                  {editingClient ? 'Edit Client' : 'Add New Client'}
+                </h2>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="text-white hover:text-gray-200 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                  Client Name *
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
+            {/* Modal Body */}
+            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Left Column */}
+                <div className="space-y-6">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Company Name *
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="Enter company name"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="website" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Website URL
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                        </svg>
+                      </div>
+                      <input
+                        type="url"
+                        id="website"
+                        value={formData.website}
+                        onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                        className="w-full pl-10 border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder="https://example.com"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="order" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Display Order
+                    </label>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="number"
+                        id="order"
+                        min="0"
+                        value={formData.order}
+                        onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
+                        className="w-24 border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-center"
+                      />
+                      <span className="text-sm text-gray-500">Lower numbers appear first</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.isActive}
+                        onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                        className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Display on website</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Right Column - Logo Upload */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Company Logo *
+                  </label>
+                  <SmartImageUpload
+                    category={ImageCategory.CLIENT_LOGO}
+                    currentImage={formData.logo}
+                    onImageUploaded={(imageUrl) => setFormData({ ...formData, logo: imageUrl })}
+                    required
+                  />
+                </div>
               </div>
 
+              {/* Description - Full Width */}
               <div>
-                <SmartImageUpload
-                  category={ImageCategory.CLIENT_LOGO}
-                  currentImage={formData.logo}
-                  onImageUploaded={(imageUrl) => setFormData({ ...formData, logo: imageUrl })}
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="website" className="block text-sm font-medium text-gray-700">
-                  Website URL
-                </label>
-                <input
-                  type="url"
-                  id="website"
-                  value={formData.website}
-                  onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="description" className="block text-sm font-semibold text-gray-700 mb-2">
                   Description
                 </label>
                 <textarea
@@ -296,37 +358,36 @@ const ClientsPage: React.FC = () => {
                   rows={3}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                  placeholder="Brief description about the client company..."
                 />
               </div>
 
-              <div>
-                <label htmlFor="order" className="block text-sm font-medium text-gray-700">
-                  Display Order
-                </label>
-                <input
-                  type="number"
-                  id="order"
-                  value={formData.order}
-                  onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
-              <div className="flex items-center justify-between pt-4">
+              {/* Form Actions */}
+              <div className="flex items-center justify-end space-x-4 pt-6 border-t">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  className="px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                 >
-                  {saving ? 'Saving...' : (editingClient ? 'Update' : 'Create')}
+                  {saving ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <span>{editingClient ? 'Update Client' : 'Add Client'}</span>
+                  )}
                 </button>
               </div>
             </form>

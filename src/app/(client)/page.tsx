@@ -1,10 +1,22 @@
 import React from 'react';
 import Hero from '@/components/home/hero';
+import Statistics from '@/components/home/statistics';
+import Clients from '@/components/home/clients';
+import Services from '@/components/home/services';
+import About from '@/components/home/about';
+import Blogs from '@/components/home/blogs';
+import FAQSection from '@/components/home/faq';
 
 export default function Home() {
   return (
     <main className="min-h-screen">
       <Hero />
+      <Statistics />
+      <Clients />
+      <Services />
+      <About />
+      <Blogs />
+      <FAQSection />
       
       {/* Additional sections can be added here */}
       <div className="py-16 bg-gray-50">

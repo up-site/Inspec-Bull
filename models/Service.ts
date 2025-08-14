@@ -15,9 +15,13 @@ const servicePackageSchema = new mongoose.Schema({
 });
 
 const serviceSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: [true, 'Service title is required'],
+    trim: true
+  },
   name: {
     type: String,
-    required: [true, 'Service name is required'],
     trim: true
   },
   slug: {
@@ -28,12 +32,12 @@ const serviceSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['inspection', 'testing', 'certification', 'training', 'consulting', 'equipment-rental']
+    enum: ['inspection', 'testing', 'certification', 'training', 'consulting', 'equipment', 'jobs', 'equipment-rental']
   },
-  type: {
+  serviceType: {
     type: String,
     enum: ['on-site', 'remote', 'hybrid', 'laboratory'],
-    required: true
+    required: false
   },
   description: {
     type: String,
@@ -83,14 +87,17 @@ const serviceSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Equipment'
   }],
-  images: [{
-    url: String,
-    caption: String,
-    isPrimary: {
-      type: Boolean,
-      default: false
-    }
-  }],
+  images: [String],
+  icon: String,
+  link: String,
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  order: {
+    type: Number,
+    default: 0
+  },
   testimonials: [{
     client: String,
     company: String,
@@ -154,6 +161,11 @@ const serviceSchema = new mongoose.Schema({
 });
 
 serviceSchema.index({ name: 'text', description: 'text', tags: 'text' });
-serviceSchema.index({ category: 1, type: 1, 'availability.status': 1 });
+serviceSchema.index({ category: 1, serviceType: 1, 'availability.status': 1 });
 
-export default mongoose.models.Service || mongoose.model('Service', serviceSchema);
+// Clear cached model if it exists to ensure schema changes take effect
+if (mongoose.models.Service) {
+  delete mongoose.models.Service;
+}
+
+export default mongoose.model('Service', serviceSchema);
