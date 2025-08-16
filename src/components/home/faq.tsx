@@ -161,6 +161,7 @@ const FAQSection = () => {
                   </svg>
                 </motion.div>
               </motion.button>
+              
 
               <AnimatePresence initial={false}>
                 {openFAQ === faq._id && (
