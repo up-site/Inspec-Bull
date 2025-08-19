@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import SmartImageUpload from '@/components/admin/SmartImageUpload';
+import DynamicSectionManager, { BlogSection } from '@/components/admin/DynamicSectionManager';
 import { ImageCategory } from '@/types/imageCategories';
 
 interface BlogPost {
   _id?: string;
   title: string;
   excerpt: string;
-  content: string;
+  content?: string; // Made optional for backward compatibility
+  sections?: BlogSection[];
   featuredImage: string;
   category: string;
   tags: string[];
@@ -35,12 +37,18 @@ const BlogManagementPage: React.FC = () => {
   const [formData, setFormData] = useState<BlogPost>({
     title: '',
     excerpt: '',
-    content: '',
     featuredImage: '',
     category: 'industry-news',
     tags: [],
     status: 'draft',
-    isFeatured: false
+    isFeatured: false,
+    sections: [{
+      id: 'section-1',
+      title: 'Main Content',
+      content: '',
+      order: 0,
+      type: 'text'
+    }]
   });
 
   const [tagInput, setTagInput] = useState('');
@@ -119,7 +127,28 @@ const BlogManagementPage: React.FC = () => {
 
   const handleEdit = (blog: BlogPost) => {
     setEditingBlog(blog);
-    setFormData({ ...blog });
+    
+    // Handle backward compatibility: convert old content to sections
+    let sectionsToUse = blog.sections || [];
+    if (!sectionsToUse.length && blog.content) {
+      sectionsToUse = [{
+        id: 'section-1',
+        title: 'Main Content',
+        content: blog.content,
+        order: 0,
+        type: 'text'
+      }];
+    } else if (!sectionsToUse.length) {
+      sectionsToUse = [{
+        id: 'section-1',
+        title: 'Main Content',
+        content: '',
+        order: 0,
+        type: 'text'
+      }];
+    }
+    
+    setFormData({ ...blog, sections: sectionsToUse });
     setTagInput(blog.tags.join(', '));
     setShowModal(true);
   };
@@ -153,12 +182,18 @@ const BlogManagementPage: React.FC = () => {
     setFormData({
       title: '',
       excerpt: '',
-      content: '',
       featuredImage: '',
       category: 'industry-news',
       tags: [],
       status: 'draft',
-      isFeatured: false
+      isFeatured: false,
+      sections: [{
+        id: 'section-1',
+        title: 'Main Content',
+        content: '',
+        order: 0,
+        type: 'text'
+      }]
     });
     setTagInput('');
   };
@@ -407,16 +442,13 @@ const BlogManagementPage: React.FC = () => {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label htmlFor="content" className="block text-sm font-medium text-gray-700">
-                    Content *
+                  <label className="block text-sm font-medium text-gray-700 mb-4">
+                    Blog Content Sections *
                   </label>
-                  <textarea
-                    id="content"
-                    rows={10}
-                    value={formData.content}
-                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    required
+                  <DynamicSectionManager
+                    sections={formData.sections || []}
+                    onSectionsChange={(sections) => setFormData({ ...formData, sections })}
+                    disabled={saving}
                   />
                 </div>
 

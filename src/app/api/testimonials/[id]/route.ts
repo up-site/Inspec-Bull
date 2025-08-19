@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '@/lib/mongodb';
-import Testimonial from '@/../../models/Testimonial';
+import { connectToDatabase } from '@/lib/mongodb';
+import Testimonial from '../../../../../models/Testimonial';
+import { requireAuth } from '@/lib/auth';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    await connectDB();
+    await connectToDatabase();
     const testimonial = await Testimonial.findById(params.id);
     
     if (!testimonial) {
@@ -32,7 +33,10 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    await connectDB();
+    // Require authentication for updating testimonials
+    await requireAuth(request);
+    
+    await connectToDatabase();
     const body = await request.json();
     
     const testimonial = await Testimonial.findByIdAndUpdate(
@@ -67,7 +71,10 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await connectDB();
+    // Require authentication for deleting testimonials
+    await requireAuth(request);
+    
+    await connectToDatabase();
     const testimonial = await Testimonial.findByIdAndUpdate(
       params.id,
       { isActive: false },

@@ -34,6 +34,7 @@ const AdminLogin: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
+        credentials: 'include', // Ensure cookies are included
       });
 
       const data = await response.json();
@@ -42,7 +43,7 @@ const AdminLogin: React.FC = () => {
         // The API already sets the httpOnly cookie, so we don't need to set it here
         // Redirect to the intended page or dashboard
         const redirectTo = searchParams.get('from') || '/admin/dashboard';
-        router.push(redirectTo);
+        window.location.href = redirectTo; // Use window.location for a full page reload to ensure middleware runs
       } else {
         setError(data.error || 'Login failed');
       }

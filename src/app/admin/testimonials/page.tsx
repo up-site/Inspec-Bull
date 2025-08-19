@@ -41,7 +41,9 @@ const TestimonialsPage: React.FC = () => {
 
   const fetchTestimonials = async () => {
     try {
-      const response = await fetch('/api/testimonials');
+      const response = await fetch('/api/testimonials', {
+        credentials: 'include',
+      });
       const data = await response.json();
       if (data.success) {
         setTestimonials(data.data);
@@ -68,6 +70,7 @@ const TestimonialsPage: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
+        credentials: 'include',
       });
 
       const data = await response.json();
@@ -100,6 +103,7 @@ const TestimonialsPage: React.FC = () => {
     try {
       const response = await fetch(`/api/testimonials/${testimonialId}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       const data = await response.json();

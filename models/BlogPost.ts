@@ -60,8 +60,34 @@ const blogPostSchema = new mongoose.Schema({
   },
   content: {
     type: String,
-    required: [true, 'Content is required']
+    required: false // Made optional for backward compatibility
   },
+  sections: [{
+    id: {
+      type: String,
+      required: true
+    },
+    title: {
+      type: String,
+      required: [true, 'Section title is required'],
+      trim: true,
+      maxlength: [150, 'Section title cannot exceed 150 characters']
+    },
+    content: {
+      type: String,
+      required: [true, 'Section content is required']
+    },
+    order: {
+      type: Number,
+      required: true,
+      default: 0
+    },
+    type: {
+      type: String,
+      enum: ['text', 'image', 'quote'],
+      default: 'text'
+    }
+  }],
   author: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -122,6 +148,13 @@ const blogPostSchema = new mongoose.Schema({
 
 blogPostSchema.index({ title: 'text', content: 'text', tags: 'text' });
 blogPostSchema.index({ category: 1, status: 1, publishedAt: -1 });
+
+// Custom validation to ensure either content or sections exist
+blogPostSchema.pre('validate', function() {
+  if (!this.content && (!this.sections || this.sections.length === 0)) {
+    this.invalidate('content', 'Either content or sections must be provided');
+  }
+});
 
 // Fix: Explicitly define the model to avoid TypeScript issues
 let BlogPost;

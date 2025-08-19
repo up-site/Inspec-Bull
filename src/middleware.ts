@@ -5,8 +5,8 @@ import { jwtVerify } from 'jose';
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   
-  // Skip middleware for admin login page and static assets
-  if (path === '/admin/login' || path.startsWith('/_next/') || path.startsWith('/api/')) {
+  // Skip middleware for static assets and API routes
+  if (path.startsWith('/_next/') || path.startsWith('/api/')) {
     return NextResponse.next();
   }
   
@@ -17,6 +17,33 @@ export async function middleware(request: NextRequest) {
       const token = request.cookies.get('token')?.value;
       console.log('🔍 MIDDLEWARE - Path:', path, 'Token exists:', !!token);
       
+      // Special handling for login page
+      if (path === '/admin/login') {
+        if (token) {
+          // If user is already logged in, verify token and redirect to dashboard
+          try {
+            const jwtSecret = process.env.JWT_SECRET;
+            if (!jwtSecret) {
+              console.error('JWT_SECRET is not defined');
+              return NextResponse.next();
+            }
+            
+            const secret = new TextEncoder().encode(jwtSecret);
+            const { payload } = await jwtVerify(token, secret);
+            
+            if (payload.role === 'admin') {
+              console.log('✅ Already authenticated, redirecting to dashboard');
+              return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+            }
+          } catch (error) {
+            // Token is invalid, allow access to login page
+            console.log('Invalid token, allowing access to login page');
+          }
+        }
+        return NextResponse.next();
+      }
+      
+      // For all other admin pages, require authentication
       if (!token) {
         console.log('❌ No token found, redirecting to login');
         return NextResponse.redirect(new URL('/admin/login?from=' + encodeURIComponent(path), request.url));

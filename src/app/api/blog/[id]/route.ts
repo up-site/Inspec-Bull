@@ -118,8 +118,31 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
     
     let readTime = blogPost.readTime;
-    if (body.content) {
-      readTime = Math.ceil(body.content.split(' ').length / 200);
+    let wordCount = 0;
+    
+    if (body.sections && body.sections.length > 0) {
+      // Calculate from sections
+      wordCount = body.sections.reduce((total: number, section: any) => {
+        return total + (section.content ? section.content.split(' ').length : 0);
+      }, 0);
+    } else if (body.content) {
+      // Calculate from old content format
+      wordCount = body.content.split(' ').length;
+    }
+    
+    if (wordCount > 0) {
+      readTime = Math.ceil(wordCount / 200) || 1;
+    }
+    
+    // Migrate old content format to sections if needed
+    if (body.content && (!body.sections || body.sections.length === 0)) {
+      body.sections = [{
+        id: 'section-1',
+        title: 'Main Content',
+        content: body.content,
+        order: 0,
+        type: 'text'
+      }];
     }
     
     let publishedAt = blogPost.publishedAt;

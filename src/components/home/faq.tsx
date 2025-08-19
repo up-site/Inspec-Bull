@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface FAQ {
   _id: string;
@@ -23,13 +23,13 @@ const FAQSection = () => {
 
   const fetchFAQs = async () => {
     try {
-      const response = await fetch('/api/faq?isActive=true&limit=5&sort=order');
+      const response = await fetch("/api/faq?isActive=true&limit=5&sort=order");
       const data = await response.json();
       if (data.success && data.data) {
         setFaqs(data.data);
       }
     } catch (error) {
-      console.error('Error fetching FAQs:', error);
+      console.error("Error fetching FAQs:", error);
     } finally {
       setLoading(false);
     }
@@ -97,7 +97,7 @@ const FAQSection = () => {
         </div>
 
         {/* FAQ Accordion */}
-        <motion.div 
+        <motion.div
           className="space-y-3"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -120,9 +120,9 @@ const FAQSection = () => {
               >
                 <div className="flex items-center gap-3">
                   <motion.div
-                    animate={{ 
+                    animate={{
                       rotate: openFAQ === faq._id ? 45 : 0,
-                      scale: openFAQ === faq._id ? 1.1 : 1
+                      scale: openFAQ === faq._id ? 1.1 : 1,
                     }}
                     transition={{ duration: 0.2, ease: "easeInOut" }}
                   >
@@ -132,11 +132,11 @@ const FAQSection = () => {
                       stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        strokeWidth={2} 
-                        d="M12 6v6m0 0v6m0-6h6m-6 0H6" 
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                       />
                     </svg>
                   </motion.div>
@@ -145,9 +145,9 @@ const FAQSection = () => {
                   </h3>
                 </div>
                 <motion.div
-                  animate={{ 
+                  animate={{
                     rotate: openFAQ === faq._id ? 180 : 0,
-                    scale: openFAQ === faq._id ? 1.1 : 1
+                    scale: openFAQ === faq._id ? 1.1 : 1,
                   }}
                   transition={{ duration: 0.2, ease: "easeInOut" }}
                 >
@@ -157,42 +157,46 @@ const FAQSection = () => {
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </motion.div>
               </motion.button>
-              
 
               <AnimatePresence initial={false}>
                 {openFAQ === faq._id && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
-                    animate={{ 
-                      height: "auto", 
+                    animate={{
+                      height: "auto",
                       opacity: 1,
                       transition: {
                         height: { duration: 0.3, ease: "easeInOut" },
-                        opacity: { duration: 0.2, delay: 0.1 }
-                      }
+                        opacity: { duration: 0.2, delay: 0.1 },
+                      },
                     }}
-                    exit={{ 
-                      height: 0, 
+                    exit={{
+                      height: 0,
                       opacity: 0,
                       transition: {
                         height: { duration: 0.3, ease: "easeInOut" },
-                        opacity: { duration: 0.1 }
-                      }
+                        opacity: { duration: 0.1 },
+                      },
                     }}
                     className="overflow-hidden"
                   >
-                    <motion.div 
+                    <motion.div
                       className="px-5 pb-4"
                       initial={{ y: -10 }}
                       animate={{ y: 0 }}
                       transition={{ duration: 0.2, delay: 0.1 }}
                     >
                       <div className="pl-8 border-l-2 border-blue-200 ml-2">
-                        <motion.p 
+                        <motion.p
                           className="text-sm text-gray-600 leading-relaxed pl-4 whitespace-pre-line"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}

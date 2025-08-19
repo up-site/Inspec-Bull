@@ -15,12 +15,26 @@ export async function GET() {
       companyInfo = await CompanyInfo.create({
         companyName: 'Inspec Bull International',
         email: 'info@inspecbull.com',
-        phone: '+91 8891 209 432',
-        address: 'Your Company Address Here',
+        supportEmail: 'support@inspecbull.com',
+        phone: ['+91 8891 209 432'],
+        headOfficeAddress: {
+          street: 'Your Street Address',
+          city: 'Your City',
+          state: 'Your State',
+          country: 'India',
+          zipCode: '000000',
+          fullAddress: 'Your Complete Address Here'
+        },
         logo: '/images/logo.png',
         yearsExperience: 10,
         rating: 5,
-        description: 'Leading provider of Non-Destructive Testing services'
+        description: 'Leading provider of Non-Destructive Testing services',
+        businessInfo: {
+          industry: 'Non-Destructive Testing',
+          website: 'https://inspecbull.com'
+        },
+        timeZone: 'Asia/Kolkata',
+        languages: ['English', 'Hindi']
       });
     }
     
@@ -48,14 +62,25 @@ export async function PUT(request: NextRequest) {
     const {
       companyName,
       email,
+      supportEmail,
       phone,
-      address,
+      headOfficeAddress,
+      branchOffices,
       logo,
+      favicon,
       yearsExperience,
       rating,
       description,
+      missionStatement,
+      visionStatement,
+      coreValues,
+      certifications,
       socialLinks,
-      workingHours
+      contactInfo,
+      businessInfo,
+      workingHours,
+      timeZone,
+      languages
     } = body;
 
     let companyInfo = await CompanyInfo.findOne();
@@ -70,14 +95,25 @@ export async function PUT(request: NextRequest) {
         {
           companyName,
           email,
+          supportEmail,
           phone,
-          address,
+          headOfficeAddress,
+          branchOffices,
           logo,
+          favicon,
           yearsExperience,
           rating,
           description,
+          missionStatement,
+          visionStatement,
+          coreValues,
+          certifications,
           socialLinks,
-          workingHours
+          contactInfo,
+          businessInfo,
+          workingHours,
+          timeZone,
+          languages
         },
         { new: true, runValidators: true }
       );

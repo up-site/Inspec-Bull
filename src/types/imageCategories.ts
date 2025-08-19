@@ -8,6 +8,7 @@ export enum ImageCategory {
   CERTIFICATION = 'certification',
   COMPANY_PHOTO = 'company-photo',
   BLOG_FEATURED = 'blog-featured',
+  BLOG_PAGE_BANNER = 'blog-page-banner',
   COURSE_THUMBNAIL = 'course-thumbnail'
 }
 
@@ -131,6 +132,17 @@ export const IMAGE_CATEGORY_CONFIGS: Record<ImageCategory, ImageCategoryConfig> 
     maxFileSize: 2,
     allowedFormats: ['jpg', 'jpeg', 'png', 'webp'],
     folder: 'blog',
+    processingType: 'smart-crop'
+  },
+  [ImageCategory.BLOG_PAGE_BANNER]: {
+    category: ImageCategory.BLOG_PAGE_BANNER,
+    label: 'Blog Page Banner',
+    description: 'Hero banner image for the blog listing page',
+    icon: '🖼️',
+    dimensions: { width: 1920, height: 600, aspectRatio: '16:5' },
+    maxFileSize: 3,
+    allowedFormats: ['jpg', 'jpeg', 'png', 'webp'],
+    folder: 'blog/page-banner',
     processingType: 'smart-crop'
   },
   [ImageCategory.COURSE_THUMBNAIL]: {

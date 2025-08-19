@@ -57,9 +57,16 @@ const SmartImageUpload: React.FC<SmartImageUploadProps> = ({
       console.log('Preview response headers:', previewResponse.headers.get('content-type'));
 
       if (!previewResponse.ok) {
-        const errorText = await previewResponse.text();
-        console.error('Preview response error:', errorText);
-        throw new Error(`HTTP ${previewResponse.status}: ${errorText.substring(0, 100)}...`);
+        let errorMessage = 'Failed to generate preview';
+        try {
+          const errorData = await previewResponse.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          const errorText = await previewResponse.text();
+          errorMessage = errorText || `HTTP ${previewResponse.status} error`;
+        }
+        console.error('Preview response error:', errorMessage);
+        throw new Error(errorMessage);
       }
 
       const previewData = await previewResponse.json();
@@ -76,9 +83,9 @@ const SmartImageUpload: React.FC<SmartImageUploadProps> = ({
       } else {
         setError(previewData.message || 'Failed to generate preview');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Preview error:', error);
-      setError('Failed to generate preview');
+      setError(error.message || 'Failed to generate preview');
     } finally {
       setGenerating(false);
     }
@@ -111,9 +118,16 @@ const SmartImageUpload: React.FC<SmartImageUploadProps> = ({
       console.log('Upload response headers:', response.headers.get('content-type'));
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Upload response error:', errorText);
-        throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 100)}...`);
+        let errorMessage = 'Failed to upload image';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          const errorText = await response.text();
+          errorMessage = errorText || `HTTP ${response.status} error`;
+        }
+        console.error('Upload response error:', errorMessage);
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -126,9 +140,9 @@ const SmartImageUpload: React.FC<SmartImageUploadProps> = ({
       } else {
         setError(data.message || 'Failed to upload image');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error);
-      setError('Failed to upload image');
+      setError(error.message || 'Failed to upload image');
     } finally {
       setUploading(false);
     }
